@@ -83,3 +83,35 @@ def ranking(request):
         })
     results.sort(key=lambda x: x['points'], reverse=True)
     return render(request, 'core/ranking.html', {'ranking': results})
+
+@login_required
+def all_predictions(request):
+    # Only show predictions for matches where the deadline has passed (1 hour before match)
+    now = timezone.now()
+    # Logic: Match date < now + 1 hour (Wait... deadline is -1h. So if now > match.date - 1h, it is locked)
+    # Locked matches: date - 1h < now  => date < now + 1h
+    
+    # Let's filter matches first
+    # Matches that started (or are about to start in less than 1h)
+    viewable_matches = Match.objects.filter(date__lte=now + timedelta(hours=1))
+    
+    predictions = Prediction.objects.filter(match__in=viewable_matches).select_related('match', 'user', 'match__home_team', 'match__away_team').order_by('-match__date')
+
+    # Filters
+    user_id = request.GET.get('user')
+    round_num = request.GET.get('round')
+
+    if user_id:
+        predictions = predictions.filter(user_id=user_id)
+    if round_num:
+        predictions = predictions.filter(match__round=round_num)
+
+    # Context Data
+    users = User.objects.all().order_by('username')
+    rounds = Match.objects.exclude(round=None).values_list('round', flat=True).distinct().order_by('round')
+
+    return render(request, 'core/all_predictions.html', {
+        'predictions': predictions,
+        'users': users,
+        'rounds': rounds
+    })

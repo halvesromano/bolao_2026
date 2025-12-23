@@ -1,0 +1,85 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h2 class="mb-4 text-center">📊 Palpites da Galera</h2>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Filtrar por Usuário</label>
+                <select name="user" class="form-select">
+                    <option value="">Todos</option>
+                    {% for u in users %}
+                        <option value="{{ u.id }}" {% if request.GET.user|add:"0" == u.id %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Filtrar por Rodada</label>
+                <select name="round" class="form-select">
+                    <option value="">Todas</option>
+                    {% for r in rounds %}
+                        <option value="{{ r }}" {% if request.GET.round|add:"0" == r %}selected{% endif %}>{{ r }}ª Rodada</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Data/Rodada</th>
+                <th scope="col" class="text-center">Jogo</th>
+                <th scope="col">Participante</th>
+                <th scope="col" class="text-center">Palpite</th>
+                <th scope="col" class="text-center">Resultado Oficial</th>
+                <th scope="col" class="text-center">Pontos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pred in predictions %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ pred.match.date|date:"d/m H:i" }}</div>
+                        <small class="text-muted">{{ pred.match.round }}ª Rodada</small>
+                    </td>
+                    <td class="text-center">
+                        <span class="fw-bold">{{ pred.match.home_team.flag_code }} {{ pred.match.home_team.name }}</span>
+                        x
+                        <span class="fw-bold">{{ pred.match.away_team.name }} {{ pred.match.away_team.flag_code }}</span>
+                    </td>
+                    <td>{{ pred.user.username }}</td>
+                    <td class="text-center badge bg-light text-dark border fs-6 mt-2">
+                        {{ pred.home_score }} x {{ pred.away_score }}
+                    </td>
+                    <td class="text-center">
+                        {% if pred.match.is_finished %}
+                            {{ pred.match.home_score }} x {{ pred.match.away_score }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if pred.match.is_finished %}
+                            <span class="badge bg-success">{{ pred.points }} pts</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">Nenhum palpite encontrado para os filtros selecionados (ou nenhum jogo encerrado).</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
