@@ -125,6 +125,7 @@ def ranking(request):
     for u in users:
         results.append({
             'username': u.username,
+            'full_name': u.get_full_name(),
             'points': u.total_points or 0
         })
     results.sort(key=lambda x: x['points'], reverse=True)

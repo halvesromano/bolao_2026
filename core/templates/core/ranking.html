@@ -15,7 +15,7 @@
         {% for row in ranking %}
         <tr class="{% if forloop.first %}table-warning fw-bold{% endif %}">
             <th scope="row">{{ forloop.counter }}</th>
-            <td>{{ row.username }} {% if forloop.first %}👑{% endif %}</td>
+            <td>{{ row.full_name|default:row.username }} {% if forloop.first %}👑{% endif %}</td>
             <td class="text-center badge bg-primary fs-6 mt-1">{{ row.points }}</td>
         </tr>
         {% empty %}
