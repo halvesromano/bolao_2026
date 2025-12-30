@@ -1,4 +1,9 @@
-{% extends 'core/base.html' %}
+
+import os
+
+file_path = r'c:\Users\m753051\code\bolao_2026\core\templates\core\all_predictions.html'
+
+content = """{% extends 'core/base.html' %}
 
 {% block content %}
 <h2 class="mb-4 text-center">📊 Palpites da Galera</h2>
@@ -83,3 +88,9 @@
     </table>
 </div>
 {% endblock %}
+"""
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Force updated {file_path}")
