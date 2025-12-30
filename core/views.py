@@ -119,6 +119,7 @@ def submit_prediction(request, match_id):
         
     return redirect('dashboard')
 
+@login_required
 def ranking(request):
     users = User.objects.annotate(total_points=Sum('prediction__points')).order_by('-total_points')
     results = []
