@@ -20,33 +20,79 @@ class CustomPasswordChangeView(PasswordChangeView):
 @login_required
 def dashboard(request):
     now = timezone.now()
-    matches = Match.objects.filter(is_finished=False).order_by('date')
     
-    predictions = Prediction.objects.filter(user=request.user)
+    # Logic to find the default round (closest to now)
+    # We find the match with the smallest absolute time difference from now
+    closest_match = None
+    min_diff = None
+    
+    all_matches = Match.objects.all()
+    # If there are no matches, default to round 1
+    if not all_matches.exists():
+        current_round_num = 1
+    else:
+        # Optimization: We could use specific DB queries, but for a small dataset iteration is okay.
+        # Let's try to be efficient with DB:
+        # Get the match closest in the past
+        past_match = Match.objects.filter(date__lte=now).order_by('-date').first()
+        # Get the match closest in the future
+        future_match = Match.objects.filter(date__gt=now).order_by('date').first()
+        
+        candidates = []
+        if past_match: candidates.append(past_match)
+        if future_match: candidates.append(future_match)
+        
+        best_match = None
+        if not candidates:
+            # Should not happen if exists() was true, but fallback
+            current_round_num = 1
+        else:
+            # Find closest
+            best_match = min(candidates, key=lambda m: abs((m.date - now).total_seconds()))
+            current_round_num = best_match.round
+
+    # Allow user to override via GET parameter
+    selected_round = request.GET.get('round')
+    if selected_round:
+        try:
+            current_round_num = int(selected_round)
+        except ValueError:
+            pass # Keep default if invalid
+            
+    # Filter matches by the determined round
+    matches = Match.objects.filter(round=current_round_num).order_by('date')
+    
+    # Get user predictions for these matches
+    predictions = Prediction.objects.filter(user=request.user, match__round=current_round_num)
     pred_map = {p.match_id: p for p in predictions}
     
     upcoming_data = []
+    past_data = []
+
     for m in matches:
         deadline = m.date - timedelta(hours=1)
         is_locked = now > deadline
-        upcoming_data.append({
+        
+        item = {
             'match': m,
             'prediction': pred_map.get(m.id),
             'is_locked': is_locked,
             'deadline': deadline
-        })
+        }
         
-    past_matches = Match.objects.filter(is_finished=True).order_by('-date')
-    past_data = []
-    for m in past_matches:
-        past_data.append({
-            'match': m,
-            'prediction': pred_map.get(m.id)
-        })
+        if m.is_finished:
+            past_data.append(item)
+        else:
+            upcoming_data.append(item)
+            
+    # Get list of all available rounds for the dropdown
+    rounds = Match.objects.exclude(round=None).values_list('round', flat=True).distinct().order_by('round')
 
     return render(request, 'core/dashboard.html', {
         'upcoming': upcoming_data,
-        'past': past_data
+        'past': past_data,
+        'rounds': rounds,
+        'current_round': current_round_num
     })
 
 @login_required
