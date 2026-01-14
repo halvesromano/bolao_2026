@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h2 class="mb-4 text-center">🏆 Tabela do Campeonato</h2>
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" class="text-center">#</th>
+                <th scope="col">Time</th>
+                <th scope="col" class="text-center" title="Pontos">PTS</th>
+                <th scope="col" class="text-center" title="Jogos">J</th>
+                <th scope="col" class="text-center" title="Vitórias">V</th>
+                <th scope="col" class="text-center" title="Empates">E</th>
+                <th scope="col" class="text-center" title="Derrotas">D</th>
+                <th scope="col" class="text-center" title="Gols Pró">GP</th>
+                <th scope="col" class="text-center" title="Gols Contra">GC</th>
+                <th scope="col" class="text-center" title="Saldo de Gols">SG</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table %}
+            <tr class="{% if forloop.first %}table-warning fw-bold{% endif %}">
+                <td class="text-center">{{ forloop.counter }}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        {% if row.team.logo %}
+                        <img src="{{ row.team.logo.url }}" alt="{{ row.team.name }}"
+                            style="height: 24px; margin-right: 8px;">
+                        {% else %}
+                        <span class="fs-5 me-2">{{ row.team.flag_code }}</span>
+                        {% endif %}
+                        {{ row.team.name }}
+                    </div>
+                </td>
+                <td class="text-center fw-bold text-primary">{{ row.pts }}</td>
+                <td class="text-center">{{ row.j }}</td>
+                <td class="text-center">{{ row.v }}</td>
+                <td class="text-center">{{ row.e }}</td>
+                <td class="text-center">{{ row.d }}</td>
+                <td class="text-center">{{ row.gp }}</td>
+                <td class="text-center">{{ row.gc }}</td>
+                <td class="text-center">{{ row.sg }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center py-4">Nenhum dado disponível.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -4,7 +4,60 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 from django.utils import timezone
-from .models import Match, Prediction
+from .models import Match, Prediction, Team
+
+# ... (imports remain the same, just showing the change in the first line if I could, but I'll use separate chunks for clarity or just append the view)
+# Actually, I will update the import first, then append the function.
+
+@login_required
+def championship_table(request):
+    teams = Team.objects.all()
+    table = []
+
+    for team in teams:
+        stats = {
+            'team': team,
+            'j': 0, 'v': 0, 'e': 0, 'd': 0,
+            'gp': 0, 'gc': 0, 'sg': 0, 'pts': 0
+        }
+        
+        # Get finished matches for this team
+        home_matches = Match.objects.filter(home_team=team, is_finished=True)
+        away_matches = Match.objects.filter(away_team=team, is_finished=True)
+        
+        for m in home_matches:
+            stats['j'] += 1
+            stats['gp'] += m.home_score
+            stats['gc'] += m.away_score
+            if m.home_score > m.away_score:
+                stats['v'] += 1
+                stats['pts'] += 3
+            elif m.home_score == m.away_score:
+                stats['e'] += 1
+                stats['pts'] += 1
+            else:
+                stats['d'] += 1
+                
+        for m in away_matches:
+            stats['j'] += 1
+            stats['gp'] += m.away_score
+            stats['gc'] += m.home_score
+            if m.away_score > m.home_score:
+                stats['v'] += 1
+                stats['pts'] += 3
+            elif m.away_score == m.home_score:
+                stats['e'] += 1
+                stats['pts'] += 1
+            else:
+                stats['d'] += 1
+        
+        stats['sg'] = stats['gp'] - stats['gc']
+        table.append(stats)
+        
+    # Sort by Points (desc), Wins (desc), Goal Difference (desc), Goals For (desc)
+    table.sort(key=lambda x: (x['pts'], x['v'], x['sg'], x['gp']), reverse=True)
+    
+    return render(request, 'core/championship_table.html', {'table': table})
 from django.db.models import Sum
 from datetime import timedelta
 from django.contrib import messages
