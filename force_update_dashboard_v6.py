@@ -1,4 +1,9 @@
-{% extends 'core/base.html' %}
+
+import os
+
+file_path = r'c:\Users\m753051\code\bolao_2026\core\templates\core\dashboard.html'
+
+content = """{% extends 'core/base.html' %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -47,7 +52,8 @@
                         <span class="d-inline-block ms-2" tabindex="0" data-bs-toggle="popover" 
                               data-bs-trigger="hover focus" 
                               data-bs-title="Status dos Palpites"
-                              data-bs-content-id="popover-match-{{ item.match.id }}">
+                              data-bs-content-id="popover-match-{{ item.match.id }}"
+                              style="cursor: help;">
                             ℹ️
                         </span>
 
@@ -168,7 +174,7 @@
 {% block scripts %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        console.log("Inicializando popovers (v8)...");
+        console.log("Inicializando popovers...");
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
         console.log("Triggers encontrados:", popoverTriggerList.length);
         
@@ -179,8 +185,7 @@
                 container: 'body',
                 trigger: 'hover focus',
                 content: function () {
-                    // FIX: Using popoverTriggerEl directly instead of 'this'
-                    var contentId = popoverTriggerEl.getAttribute('data-bs-content-id');
+                    var contentId = this.getAttribute('data-bs-content-id');
                     var contentEl = document.getElementById(contentId);
                     if (contentEl) {
                         return contentEl.innerHTML;
@@ -194,3 +199,9 @@
     });
 </script>
 {% endblock %}
+"""
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Force updated {file_path}")

@@ -119,6 +119,17 @@ def dashboard(request):
     predictions = Prediction.objects.filter(user=request.user, match__round=current_round_num)
     pred_map = {p.match_id: p for p in predictions}
     
+    # Logic to get all users for popover
+    all_users = User.objects.filter(is_active=True).order_by('first_name', 'username')
+    
+    # Get set of users who predicted each match
+    match_pred_users = {}
+    all_preds_round = Prediction.objects.filter(match__in=matches).values('match_id', 'user_id')
+    for p in all_preds_round:
+        if p['match_id'] not in match_pred_users:
+            match_pred_users[p['match_id']] = set()
+        match_pred_users[p['match_id']].add(p['user_id'])
+
     upcoming_data = []
     past_data = []
 
@@ -130,7 +141,8 @@ def dashboard(request):
             'match': m,
             'prediction': pred_map.get(m.id),
             'is_locked': is_locked,
-            'deadline': deadline
+            'deadline': deadline,
+            'predicted_user_ids': match_pred_users.get(m.id, set())
         }
         
         if m.is_finished:
@@ -145,7 +157,8 @@ def dashboard(request):
         'upcoming': upcoming_data,
         'past': past_data,
         'rounds': rounds,
-        'current_round': current_round_num
+        'current_round': current_round_num,
+        'all_users': all_users
     })
 
 @login_required
@@ -216,3 +229,39 @@ def all_predictions(request):
         'users': users,
         'rounds': rounds
     })
+
+@login_required
+def prediction_status(request):
+    # Fetch all users (ordered by name)
+    users = User.objects.all().order_by('first_name', 'username')
+    
+    # Fetch all rounds that have matches
+    rounds_query = Match.objects.exclude(round=None).values_list('round', flat=True).distinct().order_by('round')
+    
+    status_data = []
+    
+    for r in rounds_query:
+        # Total matches in this round
+        total_matches = Match.objects.filter(round=r).count()
+        if total_matches == 0:
+            continue
+            
+        round_info = {
+            'round': r,
+            'user_status': []
+        }
+        
+        for u in users:
+            # Count predictions for this user in this round
+            pred_count = Prediction.objects.filter(user=u, match__round=r).count()
+            is_complete = (pred_count == total_matches)
+            
+            round_info['user_status'].append({
+                'user': u,
+                'is_complete': is_complete,
+                'progress': f"{pred_count}/{total_matches}"
+            })
+            
+        status_data.append(round_info)
+        
+    return render(request, 'core/prediction_status.html', {'status_data': status_data})

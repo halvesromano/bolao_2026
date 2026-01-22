@@ -1,4 +1,9 @@
-{% extends 'core/base.html' %}
+
+import os
+
+file_path = r'c:\Users\m753051\code\bolao_2026\core\templates\core\dashboard.html'
+
+content = """{% extends 'core/base.html' %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -44,16 +49,15 @@
                         {% endif %}
 
                         <!-- Prediction Status Popover Trigger -->
-                        <span class="d-inline-block ms-2" tabindex="0" data-bs-toggle="popover" 
-                              data-bs-trigger="hover focus" 
-                              data-bs-title="Status dos Palpites"
-                              data-bs-content-id="popover-match-{{ item.match.id }}">
+                        <a tabindex="0" class="ms-2 text-decoration-none" role="button" data-bs-toggle="popover"
+                            data-bs-trigger="hover focus" data-bs-title="Status dos Palpites"
+                            data-bs-content-id="popover-match-{{ item.match.id }}">
                             ℹ️
-                        </span>
+                        </a>
 
                         <!-- Hidden Popover Content -->
                         <div id="popover-match-{{ item.match.id }}" class="d-none">
-                            <ul class="list-unstyled mb-0 small text-start">
+                            <ul class="list-unstyled mb-0 small">
                                 {% for u in all_users %}
                                 <li class="d-flex align-items-center justify-content-between mb-1">
                                     <span>{{ u.first_name|default:u.username }}</span>
@@ -92,20 +96,19 @@
                             </div>
                         </div>
 
-                        <form action="{% url 'submit_prediction' item.match.id %}" method="post" class="mt-3 row justify-content-center">
+                        <form action="{% url 'submit_prediction' item.match.id %}" method="post"
+                            class="mt-3 row justify-content-center">
                             {% csrf_token %}
                             <div class="col-3">
                                 <input type="number" name="home_score" class="form-control text-center text-dark"
-                                    value="{{ item.prediction.home_score|default_if_none:'' }}" 
-                                    {% if item.is_locked %}disabled{% endif %} 
-                                    required placeholder="casa">
+                                    value="{{ item.prediction.home_score|default_if_none:'' }}" {% if item.is_locked
+                                    %}disabled{% endif %} required placeholder="casa">
                             </div>
                             <div class="col-auto align-self-center">X</div>
                             <div class="col-3">
                                 <input type="number" name="away_score" class="form-control text-center text-dark"
-                                    value="{{ item.prediction.away_score|default_if_none:'' }}" 
-                                    {% if item.is_locked %}disabled{% endif %} 
-                                    required placeholder="fora">
+                                    value="{{ item.prediction.away_score|default_if_none:'' }}" {% if item.is_locked
+                                    %}disabled{% endif %} required placeholder="fora">
                             </div>
                             {% if not item.is_locked %}
                             <div class="col-12 mt-2">
@@ -163,34 +166,24 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        console.log("Inicializando popovers (v8)...");
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-        console.log("Triggers encontrados:", popoverTriggerList.length);
-        
         var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
             return new bootstrap.Popover(popoverTriggerEl, {
                 html: true,
-                sanitize: false,
-                container: 'body',
-                trigger: 'hover focus',
                 content: function () {
-                    // FIX: Using popoverTriggerEl directly instead of 'this'
-                    var contentId = popoverTriggerEl.getAttribute('data-bs-content-id');
-                    var contentEl = document.getElementById(contentId);
-                    if (contentEl) {
-                        return contentEl.innerHTML;
-                    } else {
-                        console.error("Conteúdo não encontrado para ID:", contentId);
-                        return "Erro ao carregar conteúdo.";
-                    }
+                    return document.getElementById(this.getAttribute('data-bs-content-id')).innerHTML;
                 }
             })
         })
     });
 </script>
 {% endblock %}
+"""
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Force updated {file_path}")
