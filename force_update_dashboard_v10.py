@@ -1,4 +1,12 @@
-{% extends 'core/base.html' %}
+
+import os
+
+file_path = r'c:\Users\m753051\code\bolao_2026\core\templates\core\dashboard.html'
+
+# Note: Added 'id' to inputs and 'data-match-id' for easier selection
+# Added Save All button and form/script at the end
+
+content = """{% extends 'core/base.html' %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -259,3 +267,9 @@
     }
 </script>
 {% endblock %}
+"""
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Force updated {file_path}")

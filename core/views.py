@@ -74,35 +74,16 @@ class CustomPasswordChangeView(PasswordChangeView):
 def dashboard(request):
     now = timezone.now()
     
-    # Logic to find the default round (closest to now)
-    # We find the match with the smallest absolute time difference from now
-    closest_match = None
-    min_diff = None
+    # Logic to find the default round
+    # Priority: First round with at least one unfinished match
+    first_unfinished = Match.objects.filter(is_finished=False).order_by('round', 'date').first()
     
-    all_matches = Match.objects.all()
-    # If there are no matches, default to round 1
-    if not all_matches.exists():
-        current_round_num = 1
+    if first_unfinished:
+        current_round_num = first_unfinished.round
     else:
-        # Optimization: We could use specific DB queries, but for a small dataset iteration is okay.
-        # Let's try to be efficient with DB:
-        # Get the match closest in the past
-        past_match = Match.objects.filter(date__lte=now).order_by('-date').first()
-        # Get the match closest in the future
-        future_match = Match.objects.filter(date__gt=now).order_by('date').first()
-        
-        candidates = []
-        if past_match: candidates.append(past_match)
-        if future_match: candidates.append(future_match)
-        
-        best_match = None
-        if not candidates:
-            # Should not happen if exists() was true, but fallback
-            current_round_num = 1
-        else:
-            # Find closest
-            best_match = min(candidates, key=lambda m: abs((m.date - now).total_seconds()))
-            current_round_num = best_match.round
+        # If all matches are finished, show the last round available
+        last_match = Match.objects.order_by('-round').first()
+        current_round_num = last_match.round if last_match else 1
 
     # Allow user to override via GET parameter
     selected_round = request.GET.get('round')
@@ -265,3 +246,50 @@ def prediction_status(request):
         status_data.append(round_info)
         
     return render(request, 'core/prediction_status.html', {'status_data': status_data})
+
+@login_required
+def submit_all_predictions(request):
+    if request.method == 'POST':
+        count = 0
+        errors = 0
+        
+        # Iterate over all POST data to find score inputs
+        # Inputs are expected to be named home_score_<match_id> and away_score_<match_id>
+        for key, value in request.POST.items():
+            if key.startswith('home_score_'):
+                match_id = key.split('_')[2]
+                home_score = value
+                away_score = request.POST.get(f'away_score_{match_id}')
+                
+                # Skip valid empty inputs (user might intentionally not predict match X)
+                if not home_score or not away_score:
+                    continue
+                    
+                match = get_object_or_404(Match, id=match_id)
+                deadline = match.date - timedelta(hours=1)
+                
+                # Verify deadline
+                if timezone.now() > deadline:
+                    errors += 1
+                    continue
+                
+                try:
+                    home = int(home_score)
+                    away = int(away_score)
+                    
+                    Prediction.objects.update_or_create(
+                        user=request.user, match=match,
+                        defaults={'home_score': home, 'away_score': away}
+                    )
+                    count += 1
+                except ValueError:
+                    continue
+
+        if count > 0:
+            messages.success(request, f"{count} palpites salvos com sucesso!")
+        elif errors > 0:
+            messages.error(request, "Alguns jogos já encerraram o prazo para palpitar.")
+        else:
+            messages.info(request, "Nenhum palpite novo foi identificado.")
+            
+    return redirect('dashboard')
