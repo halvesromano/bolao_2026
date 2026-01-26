@@ -3,28 +3,37 @@
 {% block content %}
 <h2 class="mb-4 text-center">🏆 Classificação Geral</h2>
 
-<table class="table table-striped table-hover shadow-sm">
-    <thead class="table-dark">
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Participante</th>
-            <th scope="col" class="text-center">Pontos Totais</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in ranking %}
-        <tr class="{% if forloop.first %}table-warning fw-bold{% endif %}">
-            <th scope="row">{{ forloop.counter }}</th>
-            <td>{{ row.full_name|default:row.username }} {% if forloop.first %}👑{% endif %}</td>
-            <td class="text-center badge bg-primary fs-6 mt-1">{{ row.points }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3" class="text-center">Ainda não há pontuações.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="table-responsive">
+    <table class="table table-striped table-hover shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" class="py-3">#</th>
+                <th scope="col" class="py-3">Participante</th>
+                <th scope="col" class="text-center py-3">Pontos Totais</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in ranking %}
+            <tr class="{% if forloop.first %}table-warning fw-bold{% endif %}">
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>
+                    {{ row.full_name|default:row.username }}
+                    {% if forloop.first %}
+                    <span class="ms-1" title="Líder">👑</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-primary rounded-pill fs-6">{{ row.points }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center py-4">Ainda não há pontuações.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 <div class="mt-5">
     <div class="card shadow-sm">
