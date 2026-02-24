@@ -328,9 +328,25 @@ def statistics(request):
         user_row = {'user': u, 'rounds': [], 'total': 0}
         total_points = 0
         for r in rounds:
-            # Aggregate points for this user in this round
-            r_points = Prediction.objects.filter(user=u, match__round=r).aggregate(s=Sum('points'))['s'] or 0
-            user_row['rounds'].append({'round': r, 'points': r_points})
+            # Fetch predictions for this user in this round
+            preds = Prediction.objects.filter(user=u, match__round=r).select_related('match__home_team', 'match__away_team')
+            
+            r_points = 0
+            details_list = []
+            
+            for p in preds:
+                pts = p.points if p.points is not None else 0
+                r_points += pts
+                details_list.append(f"{p.match.home_team.name} x {p.match.away_team.name} - {pts}pts")
+                
+            details_str = "<br>".join(details_list) if details_list else ""
+            
+            user_row['rounds'].append({
+                'round': r, 
+                'points': r_points, 
+                'details': details_str, 
+                'has_predictions': bool(details_list)
+            })
             total_points += r_points
         
         user_row['total'] = total_points

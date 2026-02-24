@@ -79,8 +79,12 @@
                         </td>
                         {% for r_data in row.rounds %}
                         <td>
-                            {% if r_data.points > 0 %}
-                            <span class="badge bg-light text-dark border">{{ r_data.points }}</span>
+                            {% if r_data.has_predictions %}
+                            <span
+                                class="badge {% if r_data.points > 0 %}bg-light text-dark border{% else %}bg-secondary{% endif %}"
+                                data-bs-toggle="tooltip" data-bs-html="true" title="{{ r_data.details }}">
+                                {{ r_data.points }}
+                            </span>
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}
@@ -98,4 +102,15 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
 {% endblock %}

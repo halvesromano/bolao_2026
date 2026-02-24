@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolão 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .match-card {
+            transition: transform 0.2s;
+        }
+
+        .match-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .flag-icon {
+            font-size: 1.5rem;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4 shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">⚽ Bolão 2026</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Jogos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ranking/">Ranking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/palpites/">Palpites da Galera</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tabela/">Tabela</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/status/">Status dos Palpites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/estatisticas/">Estatísticas</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    
+                    <li class="nav-item">
+                        <span class="nav-link text-white">Olá, Henrique Adm</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="/password_change/">Mudar Senha</a>
+                    </li>
+                    <li class="nav-item">
+                        <form action="/logout/" method="post">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="L7wFBOz2fFV0t4TfF9TJVzcjmIoCaWZwHtQSqZmCPJWmN7yuAIpCMnn6l1Vw90TL">
+                            <button type="submit" class="btn btn-outline-light btn-sm ms-2 mt-1">Sair</button>
+                        </form>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+
+        
+<h2 class="mb-4 text-center">📊 Estatísticas e Curiosidades</h2>
+
+<div class="row g-4 mb-5">
+    <!-- Na Mosca Leaders -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">🎯 Reis do "Na Mosca" (10 pts)</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            🏆
+                            Henrique Adm Romano
+                            <small class="text-muted">(@admin)</small>
+                        </span>
+                        <span class="badge bg-success rounded-pill">1 acertos</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            
+                            Teste Testador
+                            <small class="text-muted">(@teste)</small>
+                        </span>
+                        <span class="badge bg-success rounded-pill">1 acertos</span>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zerou Leaders -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">📉 Líderes do "Zerou"</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            Henrique Adm Romano
+                            <small class="text-muted">(@admin)</small>
+                        </span>
+                        <span class="badge bg-secondary rounded-pill">1 vezes</span>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Points per Round Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">📈 Desempenho por Rodada</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="text-start ps-3">Participante</th>
+                        
+                        <th scope="col">R1</th>
+                        
+                        <th scope="col">R2</th>
+                        
+                        <th scope="col">R3</th>
+                        
+                        <th scope="col" class="fw-bold bg-light">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td class="text-start ps-3 fw-bold">
+                            Teste Testador
+                        </td>
+                        
+                        <td>
+                            
+                            <span class="text-muted">-</span>
+                            
+                        </td>
+                        
+                        <td>
+                            
+                            <span class="text-muted">-</span>
+                            
+                        </td>
+                        
+                        <td>
+                            
+                            <span class="text-muted">-</span>
+                            
+                        </td>
+                        
+                        <td class="fw-bold bg-light">13</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="text-start ps-3 fw-bold">
+                            Henrique Adm Romano
+                        </td>
+                        
+                        <td>
+                            
+                            <span class="text-muted">-</span>
+                            
+                        </td>
+                        
+                        <td>
+                            
+                            <span class="text-muted">-</span>
+                            
+                        </td>
+                        
+                        <td>
+                            
+                            <span class="text-muted">-</span>
+                            
+                        </td>
+                        
+                        <td class="fw-bold bg-light">10</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+
+</body>
+
+</html>
