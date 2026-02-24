@@ -195,11 +195,14 @@ def all_predictions(request):
     # Filters
     user_id = request.GET.get('user')
     round_num = request.GET.get('round')
+    match_id = request.GET.get('match')
 
     if user_id:
         predictions = predictions.filter(user_id=user_id)
     if round_num:
         predictions = predictions.filter(match__round=round_num)
+    if match_id:
+        predictions = predictions.filter(match_id=match_id)
 
     # Context Data
     users = User.objects.all().order_by('username')
@@ -208,7 +211,8 @@ def all_predictions(request):
     return render(request, 'core/all_predictions.html', {
         'predictions': predictions,
         'users': users,
-        'rounds': rounds
+        'rounds': rounds,
+        'matches': viewable_matches.order_by('-date')
     })
 
 @login_required
@@ -293,3 +297,51 @@ def submit_all_predictions(request):
             messages.info(request, "Nenhum palpite novo foi identificado.")
             
     return redirect('dashboard')
+
+@login_required
+def statistics(request):
+    from django.db.models import Count, Sum, Q
+    
+    # 1. "Na Mosca" (Exact Scores - 10 points)
+    exact_scores = User.objects.filter(prediction__points=10).annotate(
+        hits=Count('prediction')
+    ).order_by('-hits')[:5]
+
+    # 2. "Zerou" (0 points in finished matches)
+    # We must filter predictions for finished matches where points are 0
+    zero_scores = User.objects.filter(
+        prediction__match__is_finished=True, 
+        prediction__points=0
+    ).annotate(
+        misses=Count('prediction')
+    ).order_by('-misses')[:5]
+
+    # 3. Points per round
+    # We need a matrix: Rows = Users, Cols = Rounds, Cells = Total Points
+    
+    users = User.objects.all().order_by('first_name', 'username')
+    rounds = Match.objects.exclude(round=None).values_list('round', flat=True).distinct().order_by('round')
+    
+    points_per_round = []
+    
+    for u in users:
+        user_row = {'user': u, 'rounds': [], 'total': 0}
+        total_points = 0
+        for r in rounds:
+            # Aggregate points for this user in this round
+            r_points = Prediction.objects.filter(user=u, match__round=r).aggregate(s=Sum('points'))['s'] or 0
+            user_row['rounds'].append({'round': r, 'points': r_points})
+            total_points += r_points
+        
+        user_row['total'] = total_points
+        points_per_round.append(user_row)
+        
+    # Sort by total points desc
+    points_per_round.sort(key=lambda x: x['total'], reverse=True)
+
+    return render(request, 'core/statistics.html', {
+        'exact_scores': exact_scores,
+        'zero_scores': zero_scores,
+        'points_per_round': points_per_round,
+        'rounds_list': rounds
+    })

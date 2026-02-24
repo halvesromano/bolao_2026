@@ -9,4 +9,5 @@ urlpatterns = [
     path('status/', views.prediction_status, name='prediction_status'),
     path('palpites/salvar-todos/', views.submit_all_predictions, name='submit_all_predictions'),
     path('predict/<int:match_id>/', views.submit_prediction, name='submit_prediction'),
+    path('estatisticas/', views.statistics, name='statistics'),
 ]

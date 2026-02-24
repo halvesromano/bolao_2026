@@ -1,0 +1,101 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h2 class="mb-4 text-center">📊 Estatísticas e Curiosidades</h2>
+
+<div class="row g-4 mb-5">
+    <!-- Na Mosca Leaders -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">🎯 Reis do "Na Mosca" (10 pts)</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for item in exact_scores %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            {% if forloop.first %}🏆{% endif %}
+                            {{ item.first_name }} {{ item.last_name }}
+                            <small class="text-muted">(@{{ item.username }})</small>
+                        </span>
+                        <span class="badge bg-success rounded-pill">{{ item.hits }} acertos</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">Ainda não houve acertos exatos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zerou Leaders -->
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">📉 Líderes do "Zerou"</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for item in zero_scores %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            {{ item.first_name }} {{ item.last_name }}
+                            <small class="text-muted">(@{{ item.username }})</small>
+                        </span>
+                        <span class="badge bg-secondary rounded-pill">{{ item.misses }} vezes</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">Ninguém zerou ainda! 👏</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Points per Round Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">📈 Desempenho por Rodada</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="text-start ps-3">Participante</th>
+                        {% for r in rounds_list %}
+                        <th scope="col">R{{ r }}</th>
+                        {% endfor %}
+                        <th scope="col" class="fw-bold bg-light">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in points_per_round %}
+                    <tr>
+                        <td class="text-start ps-3 fw-bold">
+                            {{ row.user.first_name }} {{ row.user.last_name }}
+                        </td>
+                        {% for r_data in row.rounds %}
+                        <td>
+                            {% if r_data.points > 0 %}
+                            <span class="badge bg-light text-dark border">{{ r_data.points }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="fw-bold bg-light">{{ row.total }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ rounds_list|length|add:'2' }}" class="text-center py-4">Sem dados ainda.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
