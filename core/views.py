@@ -58,6 +58,7 @@ def championship_table(request):
     table.sort(key=lambda x: (x['pts'], x['v'], x['sg'], x['gp']), reverse=True)
     
     return render(request, 'core/championship_table.html', {'table': table})
+import json
 from django.db.models import Sum
 from datetime import timedelta
 from django.contrib import messages
@@ -344,4 +345,40 @@ def statistics(request):
         'zero_scores': zero_scores,
         'points_per_round': points_per_round,
         'rounds_list': rounds
+    })
+
+@login_required
+def score_chart(request):
+    from django.db.models import Sum
+    import json
+    
+    users = User.objects.all().order_by('first_name', 'username')
+    rounds = Match.objects.exclude(round=None).values_list('round', flat=True).distinct().order_by('round')
+    
+    chart_data = {
+        'labels': [f'Rodada {r}' for r in rounds],
+        'datasets': []
+    }
+    
+    for i, u in enumerate(users):
+        user_points = []
+        cumulative = 0
+        for r in rounds:
+            r_points = Prediction.objects.filter(user=u, match__round=r).aggregate(s=Sum('points'))['s'] or 0
+            cumulative += r_points
+            user_points.append(cumulative)
+            
+        color_hue = (i * 137.5) % 360
+        dataset = {
+            'label': u.first_name or u.username,
+            'data': user_points,
+            'fill': False,
+            'borderColor': f'hsl({color_hue}, 70%, 50%)',
+            'backgroundColor': f'hsl({color_hue}, 70%, 50%)',
+            'tension': 0.1
+        }
+        chart_data['datasets'].append(dataset)
+        
+    return render(request, 'core/score_chart.html', {
+        'chart_data_json': json.dumps(chart_data)
     })
