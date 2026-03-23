@@ -43,15 +43,16 @@
 </div>
 
 <div class="table-responsive">
-    <table class="table table-hover shadow-sm align-middle">
+    <table class="table table-hover shadow-sm align-middle" id="predictionsTable">
         <thead class="table-dark">
             <tr>
-                <th scope="col">Data/Rodada</th>
-                <th scope="col" class="text-center">Jogo</th>
-                <th scope="col">Participante</th>
+                <th scope="col" class="sortable" data-col="0" style="cursor:pointer;user-select:none;">Data/Rodada <span class="sort-icon">↕</span></th>
+                <th scope="col" class="text-center sortable" data-col="1" style="cursor:pointer;user-select:none;">Jogo <span class="sort-icon">↕</span></th>
+                <th scope="col" class="sortable" data-col="2" style="cursor:pointer;user-select:none;">Participante <span class="sort-icon">↕</span></th>
                 <th scope="col" class="text-center">Palpite</th>
+                <th scope="col" class="text-center sortable" data-col="4" style="cursor:pointer;user-select:none;">Palpite criado em <span class="sort-icon">↕</span></th>
                 <th scope="col" class="text-center">Resultado Oficial</th>
-                <th scope="col" class="text-center">Pontos</th>
+                <th scope="col" class="text-center sortable" data-col="6" style="cursor:pointer;user-select:none;">Pontos <span class="sort-icon">↕</span></th>
             </tr>
         </thead>
         <tbody>
@@ -72,6 +73,9 @@
                         {{ pred.home_score }} x {{ pred.away_score }}
                     </span>
                 </td>
+                <td class="text-center text-muted small">
+                    {{ pred.created_at|date:"d/m/Y H:i"|default:"-" }}
+                </td>
                 <td class="text-center">
                     {% if pred.match.is_finished %}
                     {{ pred.match.home_score }} x {{ pred.match.away_score }}
@@ -89,7 +93,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center py-4">Nenhum palpite encontrado para os filtros selecionados (ou nenhum jogo encerrado).</td>
+                <td colspan="7" class="text-center py-4">Nenhum palpite encontrado para os filtros selecionados (ou nenhum jogo encerrado).</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -100,17 +104,13 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ---- Round/Match filter logic ----
         const roundSelect = document.getElementById('roundFilter');
         const matchSelect = document.getElementById('matchFilter');
-        
-        // Helper to get array of options since matches list is static in DOM
-        // We will toggle their visibility/disabled state
         const matchOptions = Array.from(matchSelect.options);
 
         function updateMatchFilter() {
             const selectedRound = roundSelect.value;
-            
-            // If the currently selected match doesn't belong to the new round, reset it
             const currentMatchId = matchSelect.value;
             if (currentMatchId !== "") {
                 const selectedOption = matchSelect.querySelector(`option[value="${currentMatchId}"]`);
@@ -118,18 +118,13 @@
                     matchSelect.value = "";
                 }
             }
-
             if (selectedRound === "") {
-                // If no round selected, disable match filter
                 matchSelect.disabled = true;
                 matchSelect.value = "";
             } else {
                 matchSelect.disabled = false;
-                
-                // Show only matches for the selected round
                 matchOptions.forEach(option => {
-                    if (option.value === "") return; // "All games" option always visible if enabled
-                    
+                    if (option.value === "") return;
                     if (option.dataset.round === selectedRound) {
                         option.hidden = false;
                         option.disabled = false;
@@ -140,12 +135,59 @@
                 });
             }
         }
-
-        // Initialize on load
         updateMatchFilter();
-
-        // Listen for changes
         roundSelect.addEventListener('change', updateMatchFilter);
+
+        // ---- Column sorting logic ----
+        const table = document.getElementById('predictionsTable');
+        let lastSortedCol = -1;
+        let sortAsc = true;
+
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', function() {
+                const colIndex = parseInt(this.dataset.col);
+                if (lastSortedCol === colIndex) {
+                    sortAsc = !sortAsc;
+                } else {
+                    sortAsc = true;
+                    lastSortedCol = colIndex;
+                }
+
+                // Update sort icons
+                document.querySelectorAll('th.sortable .sort-icon').forEach(icon => icon.textContent = '↕');
+                this.querySelector('.sort-icon').textContent = sortAsc ? '↑' : '↓';
+
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.cells.length > 1);
+
+                rows.sort((a, b) => {
+                    const aText = (a.cells[colIndex]?.innerText || '').trim();
+                    const bText = (b.cells[colIndex]?.innerText || '').trim();
+
+                    // Try numeric sort first (for Pontos column)
+                    const aNum = parseFloat(aText);
+                    const bNum = parseFloat(bText);
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        return sortAsc ? aNum - bNum : bNum - aNum;
+                    }
+
+                    // Try date sort (format: d/m/Y H:i)
+                    const dateRegex = /(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/;
+                    const aMatch = aText.match(dateRegex);
+                    const bMatch = bText.match(dateRegex);
+                    if (aMatch && bMatch) {
+                        const aDate = new Date(`${aMatch[3]}-${aMatch[2]}-${aMatch[1]}T${aMatch[4]}:${aMatch[5]}`);
+                        const bDate = new Date(`${bMatch[3]}-${bMatch[2]}-${bMatch[1]}T${bMatch[4]}:${bMatch[5]}`);
+                        return sortAsc ? aDate - bDate : bDate - aDate;
+                    }
+
+                    // Fallback: string sort
+                    return sortAsc ? aText.localeCompare(bText, 'pt-BR') : bText.localeCompare(aText, 'pt-BR');
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
     });
 </script>
 {% endblock %}

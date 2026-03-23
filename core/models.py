@@ -30,6 +30,8 @@ class Prediction(models.Model):
     home_score = models.IntegerField()
     away_score = models.IntegerField()
     points = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     
     class Meta:
         unique_together = ('user', 'match')
